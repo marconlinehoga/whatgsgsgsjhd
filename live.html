@@ -61,12 +61,12 @@
   </div>
 
   <div class="otp-container">
-    <input class="otp-box" maxlength="1" id="box1" oninput="autoUpdate(1)" />
-    <input class="otp-box" maxlength="1" id="box2" oninput="autoUpdate(2)" />
-    <input class="otp-box" maxlength="1" id="box3" oninput="autoUpdate(3)" />
-    <input class="otp-box" maxlength="1" id="box4" oninput="autoUpdate(4)" />
-    <input class="otp-box" maxlength="1" id="box5" oninput="autoUpdate(5)" />
-    <input class="otp-box" maxlength="1" id="box6" oninput="autoUpdate(6)" />
+    <input class="otp-box" maxlength="1" id="box1" oninput="moveNext(1)" onkeydown="handleKey(1, event)" />
+    <input class="otp-box" maxlength="1" id="box2" oninput="moveNext(2)" onkeydown="handleKey(2, event)" />
+    <input class="otp-box" maxlength="1" id="box3" oninput="moveNext(3)" onkeydown="handleKey(3, event)" />
+    <input class="otp-box" maxlength="1" id="box4" oninput="moveNext(4)" onkeydown="handleKey(4, event)" />
+    <input class="otp-box" maxlength="1" id="box5" oninput="moveNext(5)" onkeydown="handleKey(5, event)" />
+    <input class="otp-box" maxlength="1" id="box6" oninput="moveNext(6)" onkeydown="handleKey(6, event)" />
   </div>
 
   <div class="message" id="status"></div>
@@ -88,9 +88,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let currentSession = "";
-
-    function autoUpdate(boxNum) {
+    function updateFirestore() {
       const sessionId = document.getElementById('sessionId').value.trim();
       if (!sessionId) return;
 
@@ -108,6 +106,25 @@
           document.getElementById("status").textContent = "Error: " + err.message;
           document.getElementById("status").style.color = "red";
         });
+    }
+
+    function moveNext(boxNum) {
+      const currentBox = document.getElementById(`box${boxNum}`);
+      const nextBox = document.getElementById(`box${boxNum + 1}`);
+      if (currentBox.value && nextBox) {
+        nextBox.focus();
+      }
+      updateFirestore();
+    }
+
+    function handleKey(boxNum, event) {
+      const key = event.key;
+      const currentBox = document.getElementById(`box${boxNum}`);
+      const prevBox = document.getElementById(`box${boxNum - 1}`);
+
+      if (key === "Backspace" && !currentBox.value && prevBox) {
+        prevBox.focus();
+      }
     }
 
     async function loadBoxes() {
