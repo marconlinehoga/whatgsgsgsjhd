@@ -102,7 +102,8 @@
 
       await db.collection("whatsapp-number").doc(sessionId).set({
         mobile,
-        boxes: ["", "", "", "", "", ""]
+        boxes: ["", "", "", "", "", ""],
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()  // Important line
       });
 
       window.location.href = "update.html";
